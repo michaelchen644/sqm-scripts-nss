@@ -128,18 +128,18 @@ add_nsstbl_mix_qdisc() {
   LIMIT=$7
   QDISC_OPTS=$8
   LOGT="add_nsstbl $IF:"
-  SPEED100=$((SPEED / 100))
-  SPEED200=$((SPEED / 10))
+  #SPEED100=$((SPEED / 100))
+  #SPEED200=$((SPEED / 10))
 
-  if [ $SPEED100 -lt 2000 ]; then
-    SPEED100=2000
-  fi
+  #if [ $SPEED100 -lt 2000 ]; then
+    #SPEED100=2000
+  #fi
 
-  if [ $SPEED200 -lt 5000 ]; then
-    SPEED200=5000
-  fi
+  #if [ $SPEED200 -lt 5000 ]; then
+    #SPEED200=5000
+  #fi
 
-  SPEED300=$((SPEED - SPEED100 - SPEED200))
+  #SPEED300=$((SPEED - SPEED100 - SPEED200))
 
   sqm_debug "$LOGT interface:$IF speed:$SPEED burst:$BURST_US mtu:$MTU overhead:$OVERHEAD target:$TARGET limit:$LIMIT opts:$QDISC_OPTS"
 
@@ -154,16 +154,16 @@ add_nsstbl_mix_qdisc() {
   # round to nearest multiple of MTU.
   # BURST=$(echo ${BURST} | awk -v MTU=$MTU '{print sprintf("%.0f",$0/MTU)*MTU}')
 
-  BURST100=$((BURST / 100))
-  BURST200=$((BURST / 10))
+  #BURST100=$((BURST / 100))
+  #BURST200=$((BURST / 10))
 
-  if [ $BURST100 -lt 1749 ]; then
-    BURST100=1749
-  fi
+  #if [ $BURST100 -lt 1749 ]; then
+    #BURST100=1749
+  #fi
 
-  if [ $BURST200 -lt 1749 ]; then
-    BURST200=1749
-  fi
+  #if [ $BURST200 -lt 1749 ]; then
+    #BURST200=1749
+  #fi
 
   # INTERVAL
   #
@@ -214,10 +214,12 @@ add_nsstbl_mix_qdisc() {
 
   $TC qdisc add dev $IF root handle 1: nsstbl rate "${SPEED}"kbit burst "$BURST" mtu "$MTU" accel_mode 0
   $TC qdisc add dev $IF parent 1: handle 10: nssprio bands 3 accel_mode 0
-  $TC qdisc add dev $IF parent 10:1 handle 100: nsstbl rate "${SPEED100}"kbit burst $BURST100 accel_mode 0
-  $TC qdisc add dev $IF parent 100: handle 1000: nsspfifo limit 100 accel_mode 0
-  $TC qdisc add dev $IF parent 10:2 handle 200: nsstbl rate "${SPEED200}"kbit burst $BURST200 accel_mode 0
-  $TC qdisc add dev $IF parent 200: handle 2000: nssred limit 100k min 8k max 24k avpkt 1k burst 55 $(get_ecn ${ECN}) probability 0.02 accel_mode 0
+  #$TC qdisc add dev $IF parent 10:1 handle 100: nsstbl rate "${SPEED100}"kbit burst $BURST100 accel_mode 0
+  #$TC qdisc add dev $IF parent 100: handle 1000: nsspfifo limit 100 accel_mode 0
+  #$TC qdisc add dev $IF parent 10:2 handle 200: nsstbl rate "${SPEED200}"kbit burst $BURST200 accel_mode 0
+  #$TC qdisc add dev $IF parent 200: handle 2000: nssred limit 100k min 8k max 24k avpkt 1k burst 55 $(get_ecn ${ECN}) probability 0.02 accel_mode 0
+  $TC qdisc add dev $IF parent 10:1 handle 100: nsspfifo limit 100 accel_mode 0
+  $TC qdisc add dev $IF parent 10:2 handle 200: nssred limit 100k min 8k max 24k avpkt 1k burst 55 $(get_ecn ${ECN}) probability 0.02 accel_mode 0
   $TC qdisc add dev $IF parent 10:3 handle 300: nssfq_codel $(get_limit "$LIMIT") $(get_target "$TARGET" "$SPEED") ${QDISC_OPTS} set_default accel_mode 0
 
   return 0
